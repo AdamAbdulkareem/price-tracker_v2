@@ -78,7 +78,12 @@ def get_newest_row():
     db.close()
     return (newest_row_list)
 
-def get_price_change():
+def get_price_change():  # sourcery skip: for-append-to-extend, inline-variable
+    price_change_arr = []
+    percent_change_arr = []
+    with open("product_data.json", mode="r", encoding="utf-8") as file:
+        data = json.load(file)
+        
     db = MySQLdb.connect(
         host="localhost",
         user="root",
@@ -86,27 +91,42 @@ def get_price_change():
         passwd="Adamabdul@paypal4040",
         db="price_monitor",
     )
-    # Cursor for the entry price query
-    cursor = db.cursor()
-    entry_price_query = "SELECT price, database_id FROM productshistory_b09msrj97y ORDER BY database_id ASC LIMIT 1"
-    cursor.execute(entry_price_query)
-    entry_price = cursor.fetchone()[0]
-    cursor.close()
+    for key, item in data.items():
+        price_change_tuple = ()
+        product_id = item["ProductId"]
     
-    # Cursor for the current price query
-    cursor = db.cursor()
-    current_price_query = "SELECT price, database_id FROM productshistory_b09msrj97y ORDER BY database_id DESC LIMIT 1;"
-    cursor.execute(current_price_query)
-    current_price = cursor.fetchone()[0]
-    cursor.close()
+        # Cursor for the entry price query
+        cursor = db.cursor()
+        entry_price_query = "SELECT price, database_id FROM productshistory_{} ORDER BY database_id ASC LIMIT 1".format(product_id)
+        cursor.execute(entry_price_query)
+        entry_price = cursor.fetchone()[0]
+        
+        price_change_tuple += (entry_price,)
+        cursor.close()
+    
+        # Cursor for the current price query
+        cursor = db.cursor()
+        current_price_query = "SELECT price, database_id FROM productshistory_{} ORDER BY database_id DESC LIMIT 1".format(product_id)
+        cursor.execute(current_price_query)
+        current_price = cursor.fetchone()[0]
+        
+        price_change_tuple += (current_price,)
+        cursor.close()
+        
+        price_change_arr.append(price_change_tuple)
     
     db.close()
-
-    price_change = (current_price - entry_price) / entry_price * 100
-    return(round(price_change, 3))
-
-
-
+    # for item in range(len(price_change_arr)):
+    #     price_change = (item[1] - item[0]) / item[0] * 100
+    #     print(price_change)
+    #     return(round(price_change, 3))
+    for final_price, initial_price in price_change_arr:
+        percent_change = ((final_price - initial_price) / initial_price) * 100
+        print(percent_change)
+        percent_change_arr.append(percent_change)
+    
+    return (percent_change_arr)
+    
 def update_db_table():
     with open("product_data.json", mode="r", encoding="utf-8") as file:
         data = json.load(file)
@@ -120,14 +140,13 @@ def update_db_table():
     cursor = db.cursor()
     
     newest_row = get_newest_row()
-    price_change = get_price_change()
     
     for i in range(len(newest_row)):
         product_id = newest_row[i][2]
         product_name = newest_row[i][0]
         current_price = newest_row[i][1]
+        price_change = get_price_change()[i]
         date_info = newest_row[i][3]
-        
         query = "UPDATE products SET product_name = %s, current_price = %s, price_change = %s, date_time = %s WHERE product_id = %s"
         values = (product_name, current_price, price_change, json.dumps(date_info), product_id)
         cursor.execute(query,values)
@@ -136,8 +155,8 @@ def update_db_table():
     cursor.close()
     db.close()
     
-#create_table() 
-#update_table()   
-#get_newest_row()
-#get_price_change()
+create_table() 
+update_table()   
+get_newest_row()
+get_price_change()
 update_db_table()
