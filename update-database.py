@@ -122,7 +122,6 @@ def get_price_change():  # sourcery skip: for-append-to-extend, inline-variable
     #     return(round(price_change, 3))
     for final_price, initial_price in price_change_arr:
         percent_change = ((final_price - initial_price) / initial_price) * 100
-        print(percent_change)
         percent_change_arr.append(percent_change)
     
     return (percent_change_arr)
