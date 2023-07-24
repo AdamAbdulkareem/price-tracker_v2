@@ -94,9 +94,8 @@ def get_price_change():
     
     db.close()
 
-    calc_price_change = (250 - 240) / 240 * 100
+    calc_price_change = (current_price - entry_price) / entry_price * 100
     price_change = round(calc_price_change, 3)
-    print(str(price_change) + str("%"))
     return (price_change)
 
 
@@ -131,5 +130,5 @@ def update_db_table():
 #create_table() 
 #update_table()   
 #get_newest_row()
-#get_price_change()
-update_db_table()
+get_price_change()
+#update_db_table()
