@@ -70,6 +70,37 @@ def get_newest_row():
     db.close()
     return results
 
+def get_price_change():
+    db = MySQLdb.connect(
+        host="localhost",
+        user="root",
+        port=3306,
+        passwd="Adamabdul@paypal4040",
+        db="price_monitor",
+    )
+    # Cursor for the entry price query
+    cursor = db.cursor()
+    entry_price_query = "SELECT price, database_id FROM productshistory_b09msrj97y ORDER BY database_id ASC LIMIT 1"
+    cursor.execute(entry_price_query)
+    entry_price = cursor.fetchone()[0]
+    cursor.close()
+    
+    # Cursor for the current price query
+    cursor = db.cursor()
+    current_price_query = "SELECT price, database_id FROM productshistory_b09msrj97y ORDER BY database_id DESC LIMIT 1;"
+    cursor.execute(current_price_query)
+    current_price = cursor.fetchone()[0]
+    cursor.close()
+    
+    db.close()
+
+    calc_price_change = (250 - 240) / 240 * 100
+    price_change = round(calc_price_change, 3)
+    print(str(price_change) + str("%"))
+    return (price_change)
+
+
+
 def update_db_table():
     with open("product_data.json", mode="r", encoding="utf-8") as file:
         data = json.load(file)
@@ -83,13 +114,14 @@ def update_db_table():
     cursor = db.cursor()
     
     newest_row = get_newest_row()
+    price_change = get_price_change()
     product_id = newest_row[2]
     product_name = newest_row[0]
     current_price = newest_row[1]
     date_info = newest_row[3]
     
-    query = "UPDATE products SET product_name = %s, current_price = %s, date_time = %s WHERE product_id = %s"
-    values = (product_name, current_price, json.dumps(date_info), product_id)
+    query = "UPDATE products SET product_name = %s, current_price = %s, price_change = %s, date_time = %s WHERE product_id = %s"
+    values = (product_name, current_price, price_change, json.dumps(date_info), product_id)
     cursor.execute(query,values)
         
     db.commit()
@@ -99,4 +131,5 @@ def update_db_table():
 #create_table() 
 #update_table()   
 #get_newest_row()
-#update_db_table()
+#get_price_change()
+update_db_table()
