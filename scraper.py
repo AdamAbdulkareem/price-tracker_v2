@@ -4,11 +4,11 @@ from datetime import date
 from datetime import datetime
 
 
-# URL = "https://www.amazon.com/dp/B09MSRJ97Y"
+URL = "https://www.amazon.com/dp/B09MSRJ97Y"
 # URL = "https://www.amazon.com/dp/B09XBS3S5J"
 # URL = "https://www.amazon.com/dp/B0BDTWQ2DW"
 # URL = "https://www.amazon.com/dp/B0863TXGM3"
-URL = "https://www.amazon.com/dp/B099VMT8VZ"
+#URL = "https://www.amazon.com/dp/B099VMT8VZ"
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     "Accept-Encoding": "gzip, deflate, br",
@@ -20,8 +20,10 @@ try:
     soup = BeautifulSoup(page.content, "html.parser")
 
     def check_product_title():
-        return soup.find("span", id="productTitle").text.strip()
-
+        product_title =  soup.find("span", id="productTitle").text.strip()
+        print(f"Product Title:{str(product_title)}")
+        return product_title
+        
     def check_product_id():
         product_id_element = soup.find(
             "div", id="title_feature_div", attrs={"data-csa-c-asin": True}
